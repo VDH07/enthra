@@ -15,19 +15,21 @@ export default function Landing() {
 
   return (
     <div>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(7,7,17,0.85)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--glass-border)', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 22, fontWeight: 800, background: 'linear-gradient(135deg,#818cf8,#06b6d4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Enthra</span>
-        <div style={{ display: 'flex', gap: 10 }}>
-          {user ? (
-            <Link to="/dashboard" className="btn btn-primary btn-sm">Go to Dashboard</Link>
-          ) : (
-            <>
-              <Link to="/login" className="btn btn-ghost btn-sm">Sign in</Link>
-              <Link to="/register" className="btn btn-primary btn-sm">Get started free</Link>
-            </>
-          )}
-        </div>
-      </nav>
+      <div className="navbar-container">
+        <nav className="navbar">
+          <span className="navbar-logo">Enthra</span>
+          <div className="navbar-links">
+            {user ? (
+              <Link to="/dashboard" className="btn btn-primary btn-sm">Go to Dashboard</Link>
+            ) : (
+              <>
+                <Link to="/login" className="btn btn-ghost btn-sm">Sign in</Link>
+                <Link to="/register" className="btn btn-primary btn-sm">Get started free</Link>
+              </>
+            )}
+          </div>
+        </nav>
+      </div>
 
       <section className="hero">
         <div className="hero-badge">✨ Real-time collaboration, built for teams</div>
@@ -40,27 +42,31 @@ export default function Landing() {
           updates — everything you need to stay aligned and deliver on time.
         </p>
         <div className="hero-actions">
-          <Link to="/register" className="btn btn-primary" style={{ padding: '13px 28px', fontSize: 15 }}>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '14px 32px', fontSize: 15 }}>
             🚀 Start for free
           </Link>
-          <Link to="/login" className="btn btn-ghost" style={{ padding: '13px 28px', fontSize: 15 }}>
+          <Link to="/login" className="btn btn-ghost" style={{ padding: '14px 32px', fontSize: 15 }}>
             Sign in
           </Link>
         </div>
 
-        <div className="hero-preview" style={{ marginTop: 64 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
+        <div className="hero-preview" style={{ marginTop: 80, width: '100%', maxWidth: 900, animation: 'slideUp 1s ease 0.4s both' }}>
+          <div className="kanban-board" style={{ pointerEvents: 'none' }}>
             {['To Do', 'In Progress', 'Done'].map((col, i) => (
-              <div key={col} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)', borderRadius: 12, padding: 14 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12, color: ['#94a3b8','#06b6d4','#10b981'][i] }}>{col}</div>
-                {[1,2].map((n) => (
-                  <div key={n} style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: 8, padding: 10, marginBottom: 8 }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>Sample task {n}</div>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, background: 'rgba(245,158,11,0.15)', color: '#f59e0b', fontWeight: 600 }}>MEDIUM</span>
+              <div key={col} className="kanban-column" style={{ minHeight: 300 }}>
+                <div className="kanban-col-header">
+                  <div className="kanban-col-title">{col}</div>
+                </div>
+                <div className="kanban-tasks">
+                  {[1,2].map((n) => (
+                    <div key={n} className="task-card">
+                      <div className="task-card-title">Sample task {n}</div>
+                      <div className="task-card-footer">
+                        <span className="badge badge-medium">MEDIUM</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             ))}
           </div>
