@@ -9,10 +9,19 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token) { setLoading(false); return; }
+    if (!token) {
+      setLoading(false);
+      return;
+    }
     api.me()
       .then(({ user }) => setUser(user))
-      .catch(() => localStorage.removeItem('token'))
+      .catch((err) => {
+        // Only clear token on explicit auth errors (401), not network failures
+        if (err.status === 401 || err.message === 'Invalid or expired token' || err.message === 'No token provided') {
+          localStorage.removeItem('token');
+        }
+        // On network error, keep token so user stays logged in when backend recovers
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -35,8 +44,18 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    try {
+      const { user } = await api.me();
+      setUser(user);
+      return user;
+    } catch {
+      return null;
+    }
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser, setUser }}>
       {children}
     </AuthContext.Provider>
   );

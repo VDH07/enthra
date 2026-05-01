@@ -2,6 +2,14 @@ const BASE_URL = import.meta.env.VITE_API_URL || '';
 
 const getToken = () => localStorage.getItem('token');
 
+class ApiError extends Error {
+  constructor(message, status) {
+    super(message);
+    this.status = status;
+    this.name = 'ApiError';
+  }
+}
+
 const request = async (path, options = {}) => {
   const token = getToken();
   const res = await fetch(`${BASE_URL}/api${path}`, {
@@ -14,7 +22,9 @@ const request = async (path, options = {}) => {
   });
 
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || data.errors?.[0]?.msg || 'Request failed');
+  if (!res.ok) {
+    throw new ApiError(data.message || data.errors?.[0]?.msg || 'Request failed', res.status);
+  }
   return data;
 };
 
@@ -23,6 +33,8 @@ export const api = {
   register: (body) => request('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
   login: (body) => request('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
   me: () => request('/auth/me'),
+  updateProfile: (body) => request('/auth/profile', { method: 'PUT', body: JSON.stringify(body) }),
+  changePassword: (body) => request('/auth/change-password', { method: 'POST', body: JSON.stringify(body) }),
 
   // Projects
   getProjects: () => request('/projects'),
@@ -41,4 +53,7 @@ export const api = {
 
   // Dashboard
   getDashboard: () => request('/dashboard'),
+
+  // Health check
+  health: () => request('/health'),
 };

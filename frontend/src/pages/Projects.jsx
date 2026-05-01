@@ -1,6 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api';
+import { useToast } from '../context/ToastContext';
+
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+const COLORS = [
+  '#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+  '#ec4899', '#14b8a6', '#f97316', '#6366f1',
+];
 
 export default function Projects() {
   const [projects, setProjects] = useState([]);
@@ -8,32 +19,40 @@ export default function Projects() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: '', description: '' });
   const [formLoading, setFormLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const toast = useToast();
 
-  const load = () => {
+  const load = useCallback(() => {
+    setLoading(true);
     api.getProjects()
       .then(({ projects }) => setProjects(projects))
-      .catch(console.error)
+      .catch((err) => toast.error(err.message || 'Failed to load projects'))
       .finally(() => setLoading(false));
-  };
+  }, [toast]);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [load]);
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    setError('');
+    if (!form.name.trim()) return;
     setFormLoading(true);
     try {
-      await api.createProject(form);
+      await api.createProject({ name: form.name.trim(), description: form.description.trim() });
       setForm({ name: '', description: '' });
       setShowForm(false);
+      toast.success(`Project "${form.name.trim()}" created!`);
       load();
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message || 'Failed to create project');
     } finally {
       setFormLoading(false);
     }
   };
+
+  const filtered = projects.filter((p) =>
+    p.name.toLowerCase().includes(search.toLowerCase()) ||
+    (p.description || '').toLowerCase().includes(search.toLowerCase())
+  );
 
   if (loading) return <div className="loading-page"><div className="spinner" /></div>;
 
@@ -49,6 +68,20 @@ export default function Projects() {
         </button>
       </div>
 
+      {/* Search */}
+      {projects.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          <input
+            className="form-input"
+            type="search"
+            placeholder="🔍 Search projects…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{ maxWidth: 360 }}
+          />
+        </div>
+      )}
+
       {showForm && (
         <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowForm(false)}>
           <div className="modal">
@@ -58,19 +91,42 @@ export default function Projects() {
             </div>
             <form onSubmit={handleCreate}>
               <div className="modal-body">
-                {error && <div className="alert alert-error">{error}</div>}
                 <div className="form-group">
-                  <label className="form-label">Project Name *</label>
-                  <input className="form-input" value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} placeholder="My Awesome Project" required autoFocus />
+                  <label className="form-label" htmlFor="proj-name">Project Name *</label>
+                  <input
+                    id="proj-name"
+                    className="form-input"
+                    value={form.name}
+                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                    placeholder="My Awesome Project"
+                    required
+                    autoFocus
+                    maxLength={80}
+                  />
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'right' }}>
+                    {form.name.length}/80
+                  </span>
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Description</label>
-                  <textarea className="form-input" value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} placeholder="What is this project about?" />
+                  <label className="form-label" htmlFor="proj-desc">Description</label>
+                  <textarea
+                    id="proj-desc"
+                    className="form-input"
+                    value={form.description}
+                    onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                    placeholder="What is this project about?"
+                    maxLength={300}
+                  />
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'right' }}>
+                    {form.description.length}/300
+                  </span>
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-ghost btn-sm" onClick={() => setShowForm(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary btn-sm" disabled={formLoading}>
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => setShowForm(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary btn-sm" disabled={formLoading || !form.name.trim()}>
                   {formLoading ? 'Creating…' : 'Create Project'}
                 </button>
               </div>
@@ -79,7 +135,14 @@ export default function Projects() {
         </div>
       )}
 
-      {projects.length === 0 ? (
+      {filtered.length === 0 && search ? (
+        <div className="empty-state">
+          <div className="empty-icon">🔍</div>
+          <h2 className="empty-title">No results</h2>
+          <p className="empty-desc">No projects match "{search}"</p>
+          <button className="btn btn-ghost btn-sm" onClick={() => setSearch('')}>Clear search</button>
+        </div>
+      ) : projects.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">📭</div>
           <h2 className="empty-title">No projects yet</h2>
@@ -88,19 +151,32 @@ export default function Projects() {
         </div>
       ) : (
         <div className="projects-grid">
-          {projects.map((p) => (
-            <Link key={p.id} to={`/projects/${p.id}`} className="project-card">
-              <div className="project-card-name">{p.name}</div>
-              <div className="project-card-desc">{p.description || 'No description provided'}</div>
-              <div className="project-card-footer">
-                <div style={{ display: 'flex', gap: 12 }}>
-                  <span className="meta-item">👥 {p.members.length}</span>
-                  <span className="meta-item">📋 {p._count.tasks}</span>
+          {filtered.map((p, i) => {
+            const color = COLORS[i % COLORS.length];
+            const completedTasks = p._count?.tasks || 0;
+            return (
+              <Link key={p.id} to={`/projects/${p.id}`} className="project-card">
+                <div style={{
+                  height: 6, borderRadius: '3px 3px 0 0', background: color,
+                  margin: '-32px -32px 24px', borderTopLeftRadius: 'var(--radius-xl)',
+                  borderTopRightRadius: 'var(--radius-xl)',
+                }} />
+                <div className="project-card-name">{p.name}</div>
+                <div className="project-card-desc">{p.description || 'No description provided'}</div>
+                <div className="project-card-footer">
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                    <span className="meta-item">
+                      <span>👥</span> {p.members.length} member{p.members.length !== 1 ? 's' : ''}
+                    </span>
+                    <span className="meta-item">
+                      <span>📋</span> {completedTasks} task{completedTasks !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <span className={`badge badge-${p.myRole.toLowerCase()}`}>{p.myRole}</span>
                 </div>
-                <span className={`badge badge-${p.myRole.toLowerCase()}`}>{p.myRole}</span>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>
