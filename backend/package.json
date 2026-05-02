@@ -4,8 +4,8 @@
   "description": "Enthra project management API",
   "main": "src/server.js",
   "scripts": {
-    "build": "prisma generate",
-    "start": "prisma db push && node src/server.js",
+    "build": "prisma generate && prisma db push",
+    "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "migrate": "prisma migrate deploy",
     "generate": "prisma generate",

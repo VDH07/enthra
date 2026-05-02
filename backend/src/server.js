@@ -38,11 +38,15 @@ app.set('io', io);
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
+      // Allow requests with no origin (e.g., mobile apps, curl)
+      if (!origin) return callback(null, true);
+      // Allow localhost for development
+      if (origin.includes('localhost')) return callback(null, true);
+      // Allow any onrender.com subdomain (for Render Static Site)
+      if (origin.endsWith('.onrender.com')) return callback(null, true);
+      // Allow explicit FRONTEND_URL if set
+      if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) return callback(null, true);
+      callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
   })
@@ -72,19 +76,7 @@ app.delete('/api/tasks/:id', authenticate, deleteTask);
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
-// Serve frontend static files in production
-if (process.env.NODE_ENV === 'production') {
-  // process.cwd() on Render = /opt/render/project/src/backend
-  // (because start command is: cd backend && npm start)
-  // so '../frontend/dist' correctly resolves to /opt/render/project/src/frontend/dist
-  const frontendDist = path.join(process.cwd(), '..', 'frontend', 'dist');
-  console.log(`CWD: ${process.cwd()}`);
-  console.log(`Serving static files from: ${frontendDist}`);
-  app.use(express.static(frontendDist));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(frontendDist, 'index.html'));
-  });
-}
+// Frontend is deployed as a separate Render Static Site.
 
 // Socket.io connection handling
 io.on('connection', (socket) => {
