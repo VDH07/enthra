@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
@@ -11,11 +11,9 @@ export default function Login() {
   const navigate = useNavigate();
 
   // Redirect already-authenticated users straight to dashboard
-  useEffect(() => {
-    if (!authLoading && user) {
-      navigate('/dashboard', { replace: true });
-    }
-  }, [user, authLoading, navigate]);
+  if (!authLoading && user) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -24,7 +22,7 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      await login(form.email, form.password);
+      await login(form.email.trim(), form.password);
       navigate('/dashboard', { replace: true });
     } catch (err) {
       setError(err.message || 'Login failed. Please try again.');
