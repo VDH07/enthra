@@ -93,7 +93,11 @@ const getProject = async (req, res) => {
 
     // Attach caller's role
     const myMembership = project.members.find((m) => m.userId === req.user.id);
+<<<<<<< HEAD
     const myRole = req.user.role === 'ADMIN' ? 'ADMIN' : myMembership?.role || null;
+=======
+    const myRole = req.user.role === 'ADMIN' ? 'ADMIN' : myMembership?.role || 'MEMBER';
+>>>>>>> 42120c575d7e9536dfe3562f316b49dbea173de7
 
     return res.json({ project, myRole });
   } catch (err) {
@@ -171,10 +175,13 @@ const addMember = async (req, res) => {
       include: { user: { select: { id: true, name: true, email: true } } },
     });
 
+<<<<<<< HEAD
     // Emit socket event
     const io = req.app.get('io');
     io.to(`project:${projectId}`).emit('member:added', { membership });
 
+=======
+>>>>>>> 42120c575d7e9536dfe3562f316b49dbea173de7
     return res.status(201).json({ membership });
   } catch (err) {
     console.error('addMember error:', err);
@@ -196,10 +203,13 @@ const removeMember = async (req, res) => {
       where: { projectId_userId: { projectId, userId } },
     });
 
+<<<<<<< HEAD
     // Emit socket event
     const io = req.app.get('io');
     io.to(`project:${projectId}`).emit('member:removed', { userId });
 
+=======
+>>>>>>> 42120c575d7e9536dfe3562f316b49dbea173de7
     return res.json({ message: 'Member removed' });
   } catch (err) {
     console.error('removeMember error:', err);

@@ -4,10 +4,13 @@ const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
 require('dotenv').config();
+<<<<<<< HEAD
 if (!process.env.JWT_SECRET) {
   console.error('CRITICAL ERROR: JWT_SECRET is not defined in .env');
   process.exit(1);
 }
+=======
+>>>>>>> 42120c575d7e9536dfe3562f316b49dbea173de7
 
 const authRoutes = require('./routes/auth');
 const projectRoutes = require('./routes/projects');
