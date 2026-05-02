@@ -74,7 +74,10 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 // Serve frontend static files in production
 if (process.env.NODE_ENV === 'production') {
-  const frontendDist = path.join(__dirname, '../../frontend/dist');
+  // __dirname = /opt/render/project/src/backend/src
+  // frontend/dist is at /opt/render/project/src/frontend/dist
+  const frontendDist = path.join(__dirname, '..', '..', '..', 'frontend', 'dist');
+  console.log(`Serving static files from: ${frontendDist}`);
   app.use(express.static(frontendDist));
   app.get('*', (req, res) => {
     res.sendFile(path.join(frontendDist, 'index.html'));
