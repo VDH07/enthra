@@ -74,10 +74,11 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 // Serve frontend static files in production
 if (process.env.NODE_ENV === 'production') {
-  // __dirname = /opt/render/project/src/backend/src
-  // repo root = /opt/render/project/src  (2 levels up)
-  // frontend/dist = /opt/render/project/src/frontend/dist
-  const frontendDist = path.join(__dirname, '..', '..', 'frontend', 'dist');
+  // process.cwd() on Render = /opt/render/project/src/backend
+  // (because start command is: cd backend && npm start)
+  // so '../frontend/dist' correctly resolves to /opt/render/project/src/frontend/dist
+  const frontendDist = path.join(process.cwd(), '..', 'frontend', 'dist');
+  console.log(`CWD: ${process.cwd()}`);
   console.log(`Serving static files from: ${frontendDist}`);
   app.use(express.static(frontendDist));
   app.get('*', (req, res) => {
