@@ -9,7 +9,8 @@
     "dev": "nodemon src/server.js",
     "migrate": "prisma migrate deploy",
     "generate": "prisma generate",
-    "migrate:dev": "prisma migrate dev"
+    "migrate:dev": "prisma migrate dev",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^5.13.0",
