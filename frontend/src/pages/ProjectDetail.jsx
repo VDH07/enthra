@@ -67,7 +67,6 @@ export default function ProjectDetail() {
     socket.on('task:updated', onUpdated);
     socket.on('task:deleted', onDeleted);
 
-<<<<<<< HEAD
     socket.on('member:added', ({ membership }) => {
       setProject((prev) => prev ? { ...prev, members: [...prev.members, membership] } : prev);
       toast.info(`${membership.user.name} joined the project`);
@@ -83,19 +82,13 @@ export default function ProjectDetail() {
         navigate('/projects');
       }
     });
-
-=======
->>>>>>> 42120c575d7e9536dfe3562f316b49dbea173de7
     return () => {
       socket.emit('leave-project', id);
       socket.off('task:created', onCreated);
       socket.off('task:updated', onUpdated);
       socket.off('task:deleted', onDeleted);
-<<<<<<< HEAD
       socket.off('member:added');
       socket.off('member:removed');
-=======
->>>>>>> 42120c575d7e9536dfe3562f316b49dbea173de7
     };
   }, [socket, id, user, toast]);
 
@@ -229,12 +222,8 @@ export default function ProjectDetail() {
           { label: 'Total', value: tasks.length, color: '#4f46e5' },
         ].map((s) => (
           <div key={s.label} style={{
-<<<<<<< HEAD
             padding: '10px 20px', background: 'rgba(255, 255, 255, 0.05)',
             backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.1)',
-=======
-            padding: '10px 20px', background: '#fff', border: '1px solid var(--border-strong)',
->>>>>>> 42120c575d7e9536dfe3562f316b49dbea173de7
             borderRadius: 12, display: 'flex', flexDirection: 'column', gap: 2, minWidth: 100,
             boxShadow: 'var(--shadow-sm)',
           }}>
@@ -455,13 +444,9 @@ function TaskListView({ tasks, onTaskClick }) {
                       {t.assignee.name}
                     </div>
                   ) : (
-<<<<<<< HEAD
                     <span style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: 12 }}>
                       (Unassigned)
                     </span>
-=======
-                    <span style={{ color: 'var(--text-muted)' }}>Unassigned</span>
->>>>>>> 42120c575d7e9536dfe3562f316b49dbea173de7
                   )}
                 </td>
                 <td style={{ color: isOverdue ? 'var(--color-danger)' : 'var(--text-secondary)', fontSize: 13, fontWeight: 500 }}>

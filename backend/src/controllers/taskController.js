@@ -70,6 +70,16 @@ const updateTask = async (req, res) => {
       return res.status(404).json({ message: 'Task not found' });
     }
 
+    // Check project membership (Global ADMIN bypasses)
+    if (req.user.role !== 'ADMIN') {
+      const membership = await prisma.projectMember.findUnique({
+        where: { projectId_userId: { projectId: existing.projectId, userId: req.user.id } },
+      });
+      if (!membership) {
+        return res.status(403).json({ message: 'Access denied: not a member of this project' });
+      }
+    }
+
     const { title, description, status, priority, dueDate, assigneeId } = req.body;
 
     const task = await prisma.task.update({
@@ -103,6 +113,16 @@ const deleteTask = async (req, res) => {
     const existing = await prisma.task.findUnique({ where: { id } });
     if (!existing) {
       return res.status(404).json({ message: 'Task not found' });
+    }
+
+    // Check project membership (Global ADMIN bypasses)
+    if (req.user.role !== 'ADMIN') {
+      const membership = await prisma.projectMember.findUnique({
+        where: { projectId_userId: { projectId: existing.projectId, userId: req.user.id } },
+      });
+      if (!membership) {
+        return res.status(403).json({ message: 'Access denied: not a member of this project' });
+      }
     }
 
     await prisma.task.delete({ where: { id } });
